@@ -1,34 +1,29 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>Options</title>
+<title>Boldify options</title>
 
 <form id="options-form" class="detail-view-container">
-	<h3>Color Picker</h3>
-	<div class="color-picker">
-		<div class="color-inputs">
-			<label class="color-input">
-				<span>R</span>
-				<input type="range" min="0" max="255" name="colorRed">
-				<input type="number" name="colorRed" min="0" max="255">
-			</label>
-			<label class="color-input">
-				<span>G</span>
-				<input type="range" min="0" max="255" name="colorGreen">
-				<input type="number" name="colorGreen" min="0" max="255">
-			</label>
-			<label class="color-input">
-				<span>B</span>
-				<input type="range" min="0" max="255" name="colorBlue">
-				<input type="number" name="colorBlue" min="0" max="255">
-			</label>
+	<h3>Font Weight</h3>
+	<div class="font-selector-container">
+		<select name="fontWeight" id="font-weight">
+			<option value="400">Normal</option>
+			<option value="500">Medium</option>
+			<option value="600">Semi-Bold</option>
+			<option value="700">Bold</option>
+			<option value="800">Extra-Bold</option>
+			<option value="900">Black</option>
+		</select>
+		<div class="example">
+			<p>
+				<span id="example-text">Exa</span>mple
+			</p>
 		</div>
-		<div class="color-output"></div>
 	</div>
-	<h3>Notice Content</h3>
+	<h3>Selectors</h3>
 	<div class="text-inputs">
 		<label class="text-input">
-			<span>Text</span>
-			<input type="text" name="text">
+			<span>Enter selectors for Boldify</span>
+			<input type="text" id="selectors" name="selectors" placeholder="Enter CSS selectors separated by commas">
 		</label>
 	</div>
 </form>

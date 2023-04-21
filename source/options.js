@@ -4,26 +4,25 @@ import './options.css';
 
 import optionsStorage from './options-storage.js';
 
-const rangeInputs = [...document.querySelectorAll('input[type="range"][name^="color"]')];
-const numberInputs = [...document.querySelectorAll('input[type="number"][name^="color"]')];
-const output = document.querySelector('.color-output');
+// Automatically sync the form with the browser's storage
+optionsStorage.syncForm('#options-form');
 
-function updateOutputColor() {
-	output.style.backgroundColor = `rgb(${rangeInputs[0].value}, ${rangeInputs[1].value}, ${rangeInputs[2].value})`;
+const fontWeightSelect = document.getElementById('font-weight');
+const exampleText = document.getElementById('example-text');
+
+// Update the example text's font-weight
+function updateExampleText() {
+  const fontWeight = fontWeightSelect.value;
+  exampleText.style.fontWeight = fontWeight;
 }
 
-function updateInputField(event) {
-	numberInputs[rangeInputs.indexOf(event.currentTarget)].value = event.currentTarget.value;
-}
+// Set up event listeners
+fontWeightSelect.addEventListener('change', updateExampleText);
 
-for (const input of rangeInputs) {
-	input.addEventListener('input', updateOutputColor);
-	input.addEventListener('input', updateInputField);
-}
-
-async function init() {
-	await optionsStorage.syncForm('#options-form');
-	updateOutputColor();
-}
-
-init();
+// Update the example text when the page is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  optionsStorage.getAll().then(options => {
+    fontWeightSelect.value = options.fontWeight;
+    updateExampleText();
+  });
+});

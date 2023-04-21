@@ -8,7 +8,7 @@ name: Template cleanup
 on:
   push:
     branches:
-      - main
+      - maestro
 
 permissions:
   contents: write
