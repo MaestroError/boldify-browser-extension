@@ -4,22 +4,17 @@ console.log('💈 Content script loaded for', chrome.runtime.getManifest().name)
 
 async function init() {
 	const options = await optionsStorage.getAll();
-	const color = 'rgb(' + options.colorRed + ', ' + options.colorGreen + ',' + options.colorBlue + ')';
-	const text = options.text;
-	const notice = document.createElement('div');
-	notice.innerHTML = text;
-	document.body.prepend(notice);
-	notice.id = 'text-notice';
-	notice.style.border = '2px solid ' + color;
-	notice.style.color = color;
+	console.log(options.selectors.split(","), options.fontWeight);
+	processSelectedElements(options.selectors.split(","), options.fontWeight);
 }
 
-function createBoldifiedText(text) {
+function createBoldifiedText(text, fontWeight) {
 	const words = text.split(' ');
 	const fragment = document.createDocumentFragment();
   
 	words.forEach((word, index) => {
 	  const boldPart = document.createElement('strong');
+	  boldPart.style.fontWeight = fontWeight;
 	  const normalPart = document.createTextNode(word.slice(2));
 	  boldPart.textContent = word.slice(0, 2);
   
@@ -34,14 +29,14 @@ function createBoldifiedText(text) {
 	return fragment;
   }
   
-  function walk(node) {
+  function walk(node, fontWeight) {
 	if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== '') {
 	  const parent = node.parentNode;
   
 	  if (parent && parent.nodeName !== 'SCRIPT' && parent.nodeName !== 'STYLE' &&
 		  !parent.closest('input, textarea, select')) {
 		try {
-		  const boldifiedText = createBoldifiedText(node.textContent);
+		  const boldifiedText = createBoldifiedText(node.textContent, fontWeight);
   
 		  const range = document.createRange();
 		  range.selectNodeContents(node);
@@ -63,21 +58,14 @@ function createBoldifiedText(text) {
 	}
   }
   
-  function processSelectedElements(selectors) {
+  function processSelectedElements(selectors, fontWeight) {
 	selectors.forEach((selector) => {
 	  const elements = document.querySelectorAll(selector);
   
 	  elements.forEach((element) => {
-		walk(element);
+		walk(element, fontWeight);
 	  });
 	});
   }
-
-  const selectorsArray = ['article', '.text', '.post', '#post', '.story'];
-  processSelectedElements(selectorsArray);
   
-  
-//   init();
-  // @todo update "matches" in manifest
-//   walk(document.body);
-//   observeDOMChanges();
+  init();
