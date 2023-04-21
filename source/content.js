@@ -8,15 +8,17 @@ async function init() {
 	processSelectedElements(options.selectors.split(","), options.fontWeight);
 }
 
+// @todo Fix problems with Emojis
 function createBoldifiedText(text, fontWeight) {
 	const words = text.split(' ');
 	const fragment = document.createDocumentFragment();
   
 	words.forEach((word, index) => {
+	  const halfLength = Math.floor(word.length / 2);
 	  const boldPart = document.createElement('strong');
 	  boldPart.style.fontWeight = fontWeight;
-	  const normalPart = document.createTextNode(word.slice(2));
-	  boldPart.textContent = word.slice(0, 2);
+	  const normalPart = document.createTextNode(word.slice(halfLength));
+	  boldPart.textContent = word.slice(0, halfLength);
   
 	  fragment.appendChild(boldPart);
 	  fragment.appendChild(normalPart);
@@ -53,7 +55,7 @@ function createBoldifiedText(text, fontWeight) {
 	  }
 	} else {
 	  for (let child of Array.from(node.childNodes)) {
-		walk(child);
+		walk(child, fontWeight); // Pass the fontWeight parameter
 	  }
 	}
   }
@@ -66,6 +68,34 @@ function createBoldifiedText(text, fontWeight) {
 		walk(element, fontWeight);
 	  });
 	});
+  }
+
+  // Use only on difficult places, breaks performance
+  /* Usage example:
+	const targetNode = document.querySelector('#your-container-element'); // Replace with the appropriate selector
+	const fontWeight = '800';
+
+	const observer = observeMutations(targetNode, fontWeight);
+  */
+  function observeMutations(targetNode, fontWeight) {
+	const config = { childList: true, subtree: true, characterData: true };
+  
+	const callback = function (mutationsList, observer) {
+	  for (const mutation of mutationsList) {
+		if (
+		  mutation.type === 'childList' ||
+		  mutation.type === 'subtree' ||
+		  mutation.type === 'characterData'
+		) {
+		  walk(mutation.target, fontWeight);
+		}
+	  }
+	};
+  
+	const observer = new MutationObserver(callback);
+	observer.observe(targetNode, config);
+  
+	return observer;
   }
   
   init();

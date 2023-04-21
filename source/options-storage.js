@@ -2,7 +2,7 @@ import OptionsSync from 'webext-options-sync';
 
 export default new OptionsSync({
 	defaults: {
-		fontWeight: 500,
+		fontWeight: 600,
 		selectors: ['article', '.text', '.post', '#post', '.story'],
 	},
 	migrations: [
