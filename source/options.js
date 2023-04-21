@@ -4,9 +4,6 @@ import './options.css';
 
 import optionsStorage from './options-storage.js';
 
-// Automatically sync the form with the browser's storage
-optionsStorage.syncForm('#options-form');
-
 const fontWeightSelect = document.getElementById('font-weight');
 const exampleText = document.getElementById('example-text');
 
@@ -19,10 +16,9 @@ function updateExampleText() {
 // Set up event listeners
 fontWeightSelect.addEventListener('change', updateExampleText);
 
-// Update the example text when the page is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  optionsStorage.getAll().then(options => {
-    fontWeightSelect.value = options.fontWeight;
-    updateExampleText();
-  });
-});
+async function init() {
+	await optionsStorage.syncForm('#options-form');
+	updateExampleText()
+}
+
+init();
