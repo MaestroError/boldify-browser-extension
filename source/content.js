@@ -97,5 +97,16 @@ function createBoldifiedText(text, fontWeight) {
   
 	return observer;
   }
-  
+
   init();
+  
+/** Removed from manifest:
+ * {
+		"matches": [ 
+			"<all_urls>"
+		],
+		"js": [ "content.js" ],
+		"css": [ "content.css" ],
+		"run_at": "document_end"
+	}
+ */
