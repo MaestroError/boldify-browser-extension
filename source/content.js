@@ -36,7 +36,7 @@ function createBoldifiedText(text, fontWeight) {
 	  const parent = node.parentNode;
   
 	  if (parent && parent.nodeName !== 'SCRIPT' && parent.nodeName !== 'STYLE' &&
-		  !parent.closest('input, textarea, select')) {
+		  !parent.closest('input, textarea, select') && isAllowedElement(parent)) {
 		try {
 		  const boldifiedText = createBoldifiedText(node.textContent, fontWeight);
   
@@ -65,9 +65,28 @@ function createBoldifiedText(text, fontWeight) {
 	  const elements = document.querySelectorAll(selector);
   
 	  elements.forEach((element) => {
-		walk(element, fontWeight);
+		if (isAllowedElement(element)) {
+			walk(element, fontWeight);
+		}
 	  });
 	});
+  }
+
+  function isAllowedElement(element) {
+	const nodeName = element.nodeName.toLowerCase();
+	const allowedNodes = ['p', 'span', 'article', 'li'];
+	const disallowedNodes = ['a', 'pre', 'code', 'input', 'textarea', 'select'];
+	console.log(nodeName);
+	console.log(allowedNodes.includes(nodeName) &&
+	!disallowedNodes.some((disallowedNode) =>
+	  element.closest(disallowedNode)
+	));
+	return (
+	  allowedNodes.includes(nodeName) &&
+	  !disallowedNodes.some((disallowedNode) =>
+		element.closest(disallowedNode)
+	  )
+	);
   }
 
   // Use only on difficult places, breaks performance
