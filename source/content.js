@@ -2,13 +2,17 @@ import optionsStorage from './options-storage.js';
 
 console.log('💈 Content script loaded for', chrome.runtime.getManifest().name);
 
+// Initialize the content script
 async function init() {
+	// Get options from the storage
 	const options = await optionsStorage.getAll();
-	console.log(options.selectors.split(","), options.fontWeight);
+	// console.log(options.selectors.split(","), options.fontWeight);
+
+	// Process the selected elements with the given font weight
 	processSelectedElements(options.selectors.split(","), options.fontWeight);
 }
 
-// @todo Fix problems with Emojis
+// Create boldified text by splitting a text node in half and wrapping the first half in a strong tag
 function createBoldifiedText(text, fontWeight) {
 	const words = text.split(' ');
 	const fragment = document.createDocumentFragment();
@@ -31,28 +35,34 @@ function createBoldifiedText(text, fontWeight) {
 	return fragment;
   }
   
+  // Recursively walk through the DOM tree and apply the boldifying function to text nodes
   function walk(node, fontWeight) {
 	if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== '') {
-	  const parent = node.parentNode;
+	  	const parent = node.parentNode;
+
+		// Check if the first character is not a special character
+		const firstChar = node.textContent.trim()[0];
+		const isNotSpecialCharacter = /^[^\s!@#$%^&*)_+=\[\]{}\\|;:<>/?]$/i.test(firstChar);
   
-	  if (parent && parent.nodeName !== 'SCRIPT' && parent.nodeName !== 'STYLE' &&
-		  !parent.closest('input, textarea, select') && isAllowedElement(parent)) {
+		// Process the text node only if its parent is an allowed element, and the first character is not a special character
+		if (parent && parent.nodeName !== 'SCRIPT' && parent.nodeName !== 'STYLE' &&
+			!parent.closest('input, textarea, select') && isAllowedElement(parent) && isNotSpecialCharacter) {
 		try {
-		  const boldifiedText = createBoldifiedText(node.textContent, fontWeight);
-  
-		  const range = document.createRange();
-		  range.selectNodeContents(node);
-		  range.deleteContents();
-  
-		  const selection = window.getSelection();
-		  selection.removeAllRanges();
-		  selection.addRange(range);
-  
-		  range.insertNode(boldifiedText);
+			const boldifiedText = createBoldifiedText(node.textContent, fontWeight);
+
+			const range = document.createRange();
+			range.selectNodeContents(node);
+			range.deleteContents();
+
+			const selection = window.getSelection();
+			selection.removeAllRanges();
+			selection.addRange(range);
+
+			range.insertNode(boldifiedText);
 		} catch (error) {
-		  console.error('Error processing node:', error);
+			console.error('Error processing node:', error);
 		}
-	  }
+		}
 	} else {
 	  for (let child of Array.from(node.childNodes)) {
 		walk(child, fontWeight); // Pass the fontWeight parameter
@@ -60,6 +70,7 @@ function createBoldifiedText(text, fontWeight) {
 	}
   }
   
+  // Process selected elements by applying the boldifying function
   function processSelectedElements(selectors, fontWeight) {
 	selectors.forEach((selector) => {
 	  const elements = document.querySelectorAll(selector);
@@ -72,15 +83,12 @@ function createBoldifiedText(text, fontWeight) {
 	});
   }
 
+  // Check if an element is allowed for processing
   function isAllowedElement(element) {
 	const nodeName = element.nodeName.toLowerCase();
 	const allowedNodes = ['p', 'span', 'article', 'li'];
 	const disallowedNodes = ['a', 'pre', 'code', 'input', 'textarea', 'select'];
-	console.log(nodeName);
-	console.log(allowedNodes.includes(nodeName) &&
-	!disallowedNodes.some((disallowedNode) =>
-	  element.closest(disallowedNode)
-	));
+	// console.log(nodeName);
 	return (
 	  allowedNodes.includes(nodeName) &&
 	  !disallowedNodes.some((disallowedNode) =>
