@@ -12,6 +12,15 @@ async function init() {
 	processSelectedElements(options.selectors.split(","), options.fontWeight);
 }
 
+async function checkAutoDetection() {
+	const options = await optionsStorage.getAll();
+	if (options.auto) {
+		setTimeout(() => {
+			init();
+		}, 2000)
+	}
+}
+
 // Create boldified text by splitting a text node in half and wrapping the first half in a strong tag
 function createBoldifiedText(text, fontWeight) {
 	const words = text.split(' ');
@@ -20,6 +29,7 @@ function createBoldifiedText(text, fontWeight) {
 	words.forEach((word, index) => {
 	  const halfLength = Math.floor(word.length / 2);
 	  const boldPart = document.createElement('strong');
+	  boldPart.className = 'bionic-bolder';
 	  boldPart.style.fontWeight = fontWeight;
 	  const normalPart = document.createTextNode(word.slice(halfLength));
 	  boldPart.textContent = word.slice(0, halfLength);
@@ -72,10 +82,12 @@ function createBoldifiedText(text, fontWeight) {
   
   // Process selected elements by applying the boldifying function
   function processSelectedElements(selectors, fontWeight) {
+	console.log(selectors);
 	selectors.forEach((selector) => {
 	  const elements = document.querySelectorAll(selector);
-  
 	  elements.forEach((element) => {
+		console.log(isAllowedElement(element), element);
+
 		if (isAllowedElement(element)) {
 			walk(element, fontWeight);
 		}
@@ -86,7 +98,7 @@ function createBoldifiedText(text, fontWeight) {
   // Check if an element is allowed for processing
   function isAllowedElement(element) {
 	const nodeName = element.nodeName.toLowerCase();
-	const allowedNodes = ['p', 'span', 'article', 'li'];
+	const allowedNodes = ['p', 'span', 'article', 'li', 'div'];
 	const disallowedNodes = ['a', 'pre', 'code', 'input', 'textarea', 'select'];
 	// console.log(nodeName);
 	return (
@@ -95,6 +107,23 @@ function createBoldifiedText(text, fontWeight) {
 		element.closest(disallowedNode)
 	  )
 	);
+  }
+
+  function removeBoldifiedText() {
+	const boldElements = document.querySelectorAll('strong.bionic-bolder');
+  
+	boldElements.forEach((boldElement) => {
+	  const parent = boldElement.parentNode;
+	  const normalPart = boldElement.nextSibling;
+	  const originalText = boldElement.textContent + (normalPart ? normalPart.textContent : '');
+	  
+	  if (normalPart) {
+		parent.removeChild(normalPart);
+	  }
+  
+	  const textNode = document.createTextNode(originalText);
+	  parent.replaceChild(textNode, boldElement);
+	});
   }
 
   // Use only on difficult places, breaks performance
@@ -125,7 +154,33 @@ function createBoldifiedText(text, fontWeight) {
 	return observer;
   }
 
-  init();
+
+  	chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+		if (message.action === 'toggle') {
+			const status = message.status;
+			switch (status) {
+				case 'on':
+					// Process the document according to the "on" logic
+					init();
+					break;
+				case 'off':
+					// Process the document according to the "off" logic
+					removeBoldifiedText()
+					break;
+			}
+		}
+		if (message.action === 'toggleAutoDetect') {
+			let autoDetect = message.status
+			console.log(message);
+			await optionsStorage.set({ auto: autoDetect });
+		}
+	});
+
+	window.addEventListener('load', () => {
+		console.log("Checking auto detection");
+		checkAutoDetection();
+	});
+
   
 /** Removed from manifest:
  * {
